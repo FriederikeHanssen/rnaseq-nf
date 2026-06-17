@@ -1,0 +1,35 @@
+name: nf-test
+on: [push, pull_request]
+
+jobs:
+  test:
+    name: nf-test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          architecture: x64
+
+      - name: Setup Nextflow
+        uses: nf-core/setup-nextflow@b9f764e8ba5c76b712ace14ecbfcef0e40ae2dd8 # v1
+        with:
+          version: '25.10'
+
+      - name: Setup nf-test
+        uses: askimed/nf-test-action@v1
+        with:
+          version: '0.9.3'
+
+      - name: Run nf-test
+        run: nf-test test --profile docker,wave
+        env:
+          NXF_ANSI_LOG: false
