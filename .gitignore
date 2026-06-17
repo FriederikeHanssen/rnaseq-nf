@@ -3,3 +3,5 @@
 work/*
 results
 lineage
+.nf-test/
+.nf-test.log

@@ -1,0 +1,29 @@
+{
+    "salmon_quant_all_samples": {
+        "content": [
+            [
+                "quant.sf:md5,1b4e52b16c18e3c331902ff244d3f1ca",
+                "quant.sf:md5,1b4e52b16c18e3c331902ff244d3f1ca",
+                "quant.sf:md5,1b4e52b16c18e3c331902ff244d3f1ca",
+                "quant.sf:md5,1b4e52b16c18e3c331902ff244d3f1ca"
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "26.03.1"
+        },
+        "timestamp": "2026-06-17T17:40:22.935015"
+    },
+    "salmon_quant_ggal_gut": {
+        "content": [
+            "quant.sf:md5,1b4e52b16c18e3c331902ff244d3f1ca",
+            "lib_format_counts.json:md5,7f3d4b968fe209374422a25dcca752a6",
+            "cmd_info.json:md5,f7411ebfef41c1061b23c3face6df8f9"
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "26.03.1"
+        },
+        "timestamp": "2026-06-17T17:40:08.855017"
+    }
+}
