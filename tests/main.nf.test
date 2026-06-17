@@ -1,0 +1,88 @@
+nextflow_pipeline {
+
+    name "Test rnaseq-nf pipeline"
+    script "../main.nf"
+
+    test("Should run on default test data (ggal_gut)") {
+
+        when {
+            params {
+                reads = "${projectDir}/data/ggal/ggal_gut_{1,2}.fq"
+                transcriptome = "${projectDir}/data/ggal/ggal_1_48850000_49020000.Ggal71.500bpflank.fa"
+            }
+        }
+
+        then {
+            // Pipeline completes successfully
+            assert workflow.success
+
+            // Derive the results directory (sibling of nf-test's outputDir)
+            def resultsDir = outputDir.replace('/output', '/results')
+
+            // FastQC output exists for the gut sample (HTML contains timestamps, so no snapshot)
+            def fastqcDir = path("${resultsDir}/fastqc/ggal_gut")
+            assert fastqcDir.exists()
+            assert fastqcDir.list().any { it.toString().endsWith('.html') }
+
+            // MultiQC report exists (contains timestamps/versions, so no snapshot)
+            assert path("${resultsDir}/multiqc_report.html").exists()
+
+            // Sample index CSV structure (paths are absolute/unstable, check structure only)
+            def csv = path("${resultsDir}/samples.csv")
+            assert csv.exists()
+            def csvLines = csv.readLines()
+            assert csvLines[0] == '"id","fastqc","quant"'
+            assert csvLines.size() == 2
+
+            // Snapshot stable outputs: quant.sf and lib_format_counts.json
+            assert snapshot(
+                path("${resultsDir}/quant/ggal_gut/quant.sf"),
+                path("${resultsDir}/quant/ggal_gut/lib_format_counts.json"),
+                path("${resultsDir}/quant/ggal_gut/cmd_info.json")
+            ).match("salmon_quant_ggal_gut")
+        }
+    }
+
+    test("Should run on multiple samples") {
+
+        when {
+            params {
+                reads = "${projectDir}/data/ggal/ggal_*_{1,2}.fq"
+                transcriptome = "${projectDir}/data/ggal/ggal_1_48850000_49020000.Ggal71.500bpflank.fa"
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            // Derive the results directory (sibling of nf-test's outputDir)
+            def resultsDir = outputDir.replace('/output', '/results')
+
+            // All four samples should have outputs
+            def expectedSamples = ['ggal_gut', 'ggal_liver', 'ggal_lung', 'ggal_spleen']
+
+            expectedSamples.each { sample ->
+                assert path("${resultsDir}/fastqc/${sample}").exists()
+                assert path("${resultsDir}/quant/${sample}").exists()
+                assert path("${resultsDir}/quant/${sample}/quant.sf").exists()
+            }
+
+            // MultiQC report aggregates all samples
+            assert path("${resultsDir}/multiqc_report.html").exists()
+
+            // Sample index lists all samples (paths are unstable, check structure)
+            def csv = path("${resultsDir}/samples.csv")
+            assert csv.exists()
+            def csvLines = csv.readLines()
+            assert csvLines[0] == '"id","fastqc","quant"'
+            assert csvLines.size() == 5
+
+            // Snapshot stable quantification results for all samples
+            assert snapshot(
+                expectedSamples.collect { sample ->
+                    path("${resultsDir}/quant/${sample}/quant.sf")
+                }
+            ).match("salmon_quant_all_samples")
+        }
+    }
+}
